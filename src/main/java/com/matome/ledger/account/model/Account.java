@@ -16,7 +16,6 @@ public class Account  extends  AuditModel {
     @GeneratedValue(generator = "account_number")
     @Column(name="account_number", nullable = false)
     private String accountNumber;
-
     @Column(name="first_name", nullable = true)
     private String firstName;
 

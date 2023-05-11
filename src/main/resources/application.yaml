@@ -1,0 +1,35 @@
+server:
+  port: 19019
+
+spring:
+  # RabbitMQ
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  application:
+    name: accounting_ledger
+
+# Logging
+logging:
+  file:
+    name: ${logging.file.path}/app-${spring.application.name}.log
+    path: /data/logs/accounting
+  level:
+    root: info
+
+# RabbitMQ
+rabbitmq:
+  queue:
+    configurations:
+      exchange: exchange.sync.accounting.requests
+      x-message-ttl: 15000
+      x-max-length: 50
+      x-overflow: reject-publish-dlx
+      queue-name: queue.sync.accounting.requests.inbound
+      number-of-consumers: 5
+      routing-key: key.async.ivr
+      service-reply-timeout: 45000
+
+
