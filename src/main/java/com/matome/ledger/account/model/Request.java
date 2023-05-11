@@ -17,8 +17,9 @@ public class Request implements Serializable {
         BALANCE,
         CREDIT,
         DEBIT,
-        DELETE,
-        FUTURE_DATE
+        DELETE_ACCOUNT,
+        FUTURE_DATE,
+        DELETE_TRANSACTION
     }
 
     private RequestType requestType;

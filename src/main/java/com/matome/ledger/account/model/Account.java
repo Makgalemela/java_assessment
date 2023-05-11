@@ -11,6 +11,10 @@ import javax.persistence.*;
 @Table(name = "account")
 public class Account  extends  AuditModel {
 
+    public  enum accountStatus {
+        ACTIVE,
+        INACTIVE
+    }
     @Id
     @GenericGenerator(name = "account_number", strategy = "com.matome.ledger.account.util.AccountNumberGenerator")
     @GeneratedValue(generator = "account_number")
@@ -21,4 +25,7 @@ public class Account  extends  AuditModel {
 
     @Column(name="last_name", nullable = true)
     private String lastName;
+
+    @Column(name="account_status", nullable = true)
+    private accountStatus status;
 }

@@ -1,14 +1,17 @@
 package com.matome.ledger.account.services;
 
-import com.matome.ledger.account.util.ResponseHandler;
+import com.matome.ledger.account.model.Account;
+import com.matome.ledger.account.model.ResponseResult;
+import com.matome.ledger.account.model.Transactions;
 
 public interface AccountInterface {
 
-    public ResponseHandler deposit();
-    public ResponseHandler createAccount();
-    public ResponseHandler balance();
-    public ResponseHandler featureDateDeposit();
-    public ResponseHandler removeTransaction();
-    public ResponseHandler removeAccount();
+    public ResponseResult credit(final Transactions transactions);
+    public ResponseResult debit(final Transactions transactions);
+    public ResponseResult createAccount(final Account account);
+    public ResponseResult balance(final Account account);
+    public ResponseResult featureDateDeposit();
+    public ResponseResult removeTransaction(final Transactions transactions);
+    public ResponseResult removeAccount(final Account account);
 
 }

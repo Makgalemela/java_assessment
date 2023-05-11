@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @Table(name = "feature_dated_transactions")
 public class FeatureDatedTransactions extends AuditModel {
 
-    enum STATUS {
+    public enum STATUS {
         CANCELLED,
         PROCESSED,
         WAITING,
@@ -40,11 +40,10 @@ public class FeatureDatedTransactions extends AuditModel {
     @JoinColumn(name = "account_number", nullable = false)
     private Account accountNumber;
 
-    @Column(name = "credit", nullable = false)
-    private BigDecimal credit;
-
-    @Column(name = "debit", nullable = false)
-    private BigDecimal debit;
+    @Column(name = "amount", nullable = false)
+    private BigDecimal amount;
+    @Column(name = "transaction_type", nullable = false)
+    private Transactions.transactionType transactionType;
 
     @Column(name = "dated_for", nullable = false)
     private LocalDate datedFor;

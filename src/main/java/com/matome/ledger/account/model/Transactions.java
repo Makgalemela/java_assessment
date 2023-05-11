@@ -11,15 +11,21 @@ import java.math.BigDecimal;
 @Table(name = "transctions")
 public class Transactions  extends AuditModelTransactions {
 
+    public enum transactionType {
+        CREDIT,
+        DEBIT
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ManyToOne
     @JoinColumn(name = "account_number", nullable = false)
     private Account accountNumber;
-    @Column(name = "credit", nullable = false)
-    private BigDecimal credit;
-    @Column(name = "debit", nullable = false)
-    private BigDecimal debit;
+    @Column(name = "amount", nullable = false)
+    private BigDecimal amount;
+    @Column(name = "transaction_type", nullable = false)
+    private transactionType transactionType;
+    @Column(name = "Reference", nullable = false)
+    private String reference;
 
 }
