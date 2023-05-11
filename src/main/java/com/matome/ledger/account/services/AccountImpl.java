@@ -2,6 +2,7 @@ package com.matome.ledger.account.services;
 
 import com.matome.ledger.account.model.*;
 import com.matome.ledger.account.repository.AccountRepository;
+import com.matome.ledger.account.repository.FutureTransactionsRepository;
 import com.matome.ledger.account.repository.RemovedTransactionsRepository;
 import com.matome.ledger.account.repository.TransactionsRepository;
 import org.springframework.amqp.core.Message;
@@ -20,11 +21,13 @@ public class AccountImpl implements AccountInterface {
     final TransactionsRepository transactionsRepository;
     final RemovedTransactionsRepository removedTransactionsRepository;
 
+    final FutureTransactionsRepository futureTransactionsRepository;
     public AccountImpl(AccountRepository accountRepository, TransactionsRepository transactionsRepository,
-                       RemovedTransactionsRepository removedTransactionsRepository) {
+                       RemovedTransactionsRepository removedTransactionsRepository, FutureTransactionsRepository futureTransactionsRepository) {
         this.accountRepository = accountRepository;
         this.transactionsRepository = transactionsRepository;
         this.removedTransactionsRepository = removedTransactionsRepository;
+        this.futureTransactionsRepository = futureTransactionsRepository;
     }
 
     @RabbitListener(queues = "#{serviceQueueInfo.name}", concurrency = "#{serviceQueueConsumers}")
@@ -44,9 +47,8 @@ public class AccountImpl implements AccountInterface {
                 return removeAccount(request.getAccount());
             }
             case FUTURE_DATE: {
-                return featureDateDeposit();
+                return featureDateDeposit(request.getFeatureDatedTransactions());
             }
-
             case BALANCE: {
                 return balance(request.getAccount());
             }
@@ -65,7 +67,7 @@ public class AccountImpl implements AccountInterface {
     public ResponseResult credit(final Transactions transactions) {
 
         Transactions credit = transactions;
-        transactions.setTransactionType(Transactions.transactionType.CREDIT);
+        credit.setTransactionType(Transactions.transactionType.CREDIT);
         transactionsRepository.save(credit);
 
         return ResponseResult.builder()
@@ -75,11 +77,11 @@ public class AccountImpl implements AccountInterface {
 
     @Override
     public ResponseResult debit(final Transactions transactions) {
-        Transactions credit = transactions;
-        transactions.setTransactionType(Transactions.transactionType.DEBIT);
-        transactionsRepository.save(credit);
+        Transactions debit = transactions;
+        debit.setTransactionType(Transactions.transactionType.DEBIT);
+        transactionsRepository.save(debit);
         return ResponseResult.builder()
-                .transactions(credit)
+                .transactions(debit)
                 .build();
     }
 
@@ -114,8 +116,14 @@ public class AccountImpl implements AccountInterface {
     }
 
     @Override
-    public ResponseResult featureDateDeposit() {
-        return null;
+    public ResponseResult featureDateDeposit(final FeatureDatedTransactions  transactions) {
+
+        FeatureDatedTransactions featureDatedTransactions = transactions;
+        transactions.setTransactionType(Transactions.transactionType.DEBIT);
+        futureTransactionsRepository.save(featureDatedTransactions);
+        return ResponseResult.builder()
+                .featureDatedTransactions(featureDatedTransactions)
+                .build();
     }
 
     @Override
@@ -173,7 +181,9 @@ public class AccountImpl implements AccountInterface {
                 transactionsRepository.deleteAll(transactions.get());
             }
         }
-        return null;
+        return ResponseResult.builder()
+                .account(account)
+                .build();
     }
 
 }

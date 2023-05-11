@@ -13,4 +13,5 @@ public class ResponseResult {
     private Account account;
     private Double balance;
     private Transactions transactions;
+    private  FeatureDatedTransactions featureDatedTransactions;
 }
