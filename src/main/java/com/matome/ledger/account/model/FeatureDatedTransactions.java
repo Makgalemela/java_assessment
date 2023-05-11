@@ -7,8 +7,8 @@ import javax.persistence.*;
 
 @Data
 @Entity
-@Table(name = "account")
-public class Account  extends  AuditModel {
+@Table(name = "feature_dated_transactions")
+public class FeatureDatedTransactions extends AuditModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
