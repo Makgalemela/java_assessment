@@ -2,6 +2,8 @@ package com.matome.ledger.account.services;
 
 
 
+import com.matome.ledger.account.model.Request;
+import com.matome.ledger.account.model.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -31,10 +33,9 @@ public class RequestProcessor {
     }
 
 
-    public ResponseEntity<?> processRequest(final Object request) {
+    public ResponseResult processRequest(final Request request) {
 
-        Object response = null;
-        HttpStatus httpStatus = HttpStatus.OK;
+        ResponseResult response = ResponseResult.builder().build();
         try {
             amqTemplate.setReplyTimeout(this.serviceReplyTimeout);
             response = amqTemplate.convertSendAndReceiveAsType(
@@ -43,10 +44,11 @@ public class RequestProcessor {
                     request,
                     new ParameterizedTypeReference<>() {});
 
+
         } catch (Exception ex) {
 
             ex.printStackTrace();
-            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+//            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 //            Status status = Status.builder()
 //                    .code("7")
 //                    .description("Internal server error")
@@ -58,6 +60,6 @@ public class RequestProcessor {
 //                    .build();
         }
 
-        return new ResponseEntity<>(response, httpStatus);
+        return response;
     }
 }

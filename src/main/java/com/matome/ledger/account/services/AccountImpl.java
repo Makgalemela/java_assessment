@@ -5,6 +5,7 @@ import com.matome.ledger.account.repository.AccountRepository;
 import com.matome.ledger.account.repository.FutureTransactionsRepository;
 import com.matome.ledger.account.repository.RemovedTransactionsRepository;
 import com.matome.ledger.account.repository.TransactionsRepository;
+import com.matome.ledger.account.util.AccountNumberGenerator;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
@@ -21,12 +22,15 @@ public class AccountImpl implements AccountInterface {
     final TransactionsRepository transactionsRepository;
     final RemovedTransactionsRepository removedTransactionsRepository;
 
+    final  AccountNumberGenerator accountNumberGenerator;
+
     final FutureTransactionsRepository futureTransactionsRepository;
     public AccountImpl(AccountRepository accountRepository, TransactionsRepository transactionsRepository,
-                       RemovedTransactionsRepository removedTransactionsRepository, FutureTransactionsRepository futureTransactionsRepository) {
+                       RemovedTransactionsRepository removedTransactionsRepository, AccountNumberGenerator accountNumberGenerator, FutureTransactionsRepository futureTransactionsRepository) {
         this.accountRepository = accountRepository;
         this.transactionsRepository = transactionsRepository;
         this.removedTransactionsRepository = removedTransactionsRepository;
+        this.accountNumberGenerator = accountNumberGenerator;
         this.futureTransactionsRepository = futureTransactionsRepository;
     }
 
@@ -98,6 +102,8 @@ public class AccountImpl implements AccountInterface {
 
         Optional<List<Transactions>> transactions = transactionsRepository.findByAccountNumber(account);
 
+
+
         if (transactions.isPresent()) {
             List<Transactions> transactionsList = transactions.get();
             Double balance = transactionsList.stream()
@@ -107,10 +113,12 @@ public class AccountImpl implements AccountInterface {
                     .sum();
             return ResponseResult.builder()
                     .balance(balance)
+                    .account(account)
                     .build();
         } else {
             return ResponseResult.builder()
                     .balance(0.00)
+                    .account(account)
                     .build();
         }
     }

@@ -1,17 +1,22 @@
 package com.matome.ledger.account.model;
 
 
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
+@ToString
+@Builder
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "account")
 public class Account  extends  AuditModel {
 
-    public  enum accountStatus {
+    public  enum AccountStatus {
         ACTIVE,
         INACTIVE
     }
@@ -27,5 +32,5 @@ public class Account  extends  AuditModel {
     private String lastName;
 
     @Column(name="account_status", nullable = true)
-    private accountStatus status;
+    private AccountStatus status;
 }
