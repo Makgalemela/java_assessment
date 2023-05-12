@@ -32,8 +32,6 @@ public class AccountNumberGenerator  implements IdentifierGenerator {
         if(rs.next()) {
            count = (Integer) rs.getInt("count");
 
-        } else  {
-            count = 1;
         }
         LocalDate currentDateTime = LocalDate.now();
         // 5 char long chars
@@ -48,7 +46,7 @@ public class AccountNumberGenerator  implements IdentifierGenerator {
 
         String accountNumber = String.format("%05d", count);
 
-        return String.format("%s%s", account, accountNumber);
+        return   Long.valueOf(String.format("%s%s", account, accountNumber));
     }
 
 }

@@ -1,9 +1,10 @@
 package com.matome.ledger.account.services;
 
-import com.matome.ledger.account.model.Account;
-import com.matome.ledger.account.model.FeatureDatedTransactions;
+import com.matome.ledger.account.Dto.TransactionListDto;
+import com.matome.ledger.account.entities.Account;
+import com.matome.ledger.account.entities.FeatureDatedTransactions;
 import com.matome.ledger.account.model.ResponseResult;
-import com.matome.ledger.account.model.Transactions;
+import com.matome.ledger.account.entities.Transactions;
 
 public interface AccountInterface {
 
@@ -14,5 +15,6 @@ public interface AccountInterface {
     public ResponseResult featureDateDeposit(final FeatureDatedTransactions transactions);
     public ResponseResult removeTransaction(final Transactions transactions);
     public ResponseResult removeAccount(final Account account);
+    public  ResponseResult transactions(final TransactionListDto transactionListDto);
 
 }

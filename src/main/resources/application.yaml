@@ -54,5 +54,8 @@ rabbitmq:
       routing-key: key.async.ivr
       service-reply-timeout: 45000
 
+# Okta authorization
 
-
+okta:
+  oauth2:
+    issuer: https://dev-05562770.okta.com/oauth2/default

@@ -1,23 +1,26 @@
-package com.matome.ledger.account.model;
+package com.matome.ledger.account.entities;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.matome.ledger.account.entities.Account;
+import com.matome.ledger.account.entities.AuditModelTransactions;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Builder
-@Entity
-@Table(name = "removed_transactions")
 @AllArgsConstructor
 @NoArgsConstructor
-public class RemovedTransactions extends AuditModelTransactions {
+@Entity
+@Table(name = "transctions")
+public class Transactions  extends AuditModelTransactions {
 
+    public enum transactionType {
+        CREDIT,
+        DEBIT
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -27,10 +30,10 @@ public class RemovedTransactions extends AuditModelTransactions {
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
     @Column(name = "transaction_type", nullable = false)
+
     @Enumerated(EnumType.STRING)
-    private Transactions.transactionType transactionType;
-    @Column(name = "credit", nullable = false)
-    private LocalDateTime originalDate;
+    private transactionType transactionType;
     @Column(name = "Reference", nullable = false)
     private String reference;
+
 }

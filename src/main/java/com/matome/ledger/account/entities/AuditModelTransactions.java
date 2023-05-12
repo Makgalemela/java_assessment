@@ -1,4 +1,4 @@
-package com.matome.ledger.account.model;
+package com.matome.ledger.account.entities;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

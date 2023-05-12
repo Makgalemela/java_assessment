@@ -1,12 +1,14 @@
-package com.matome.ledger.account.model;
+package com.matome.ledger.account.entities;
 
 
+import com.matome.ledger.account.entities.Account;
+import com.matome.ledger.account.entities.AuditModel;
+import com.matome.ledger.account.entities.Transactions;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /*
     We need to be able to retain future date transaction

@@ -1,4 +1,4 @@
-package com.matome.ledger.account.model;
+package com.matome.ledger.account.entities;
 
 
 import lombok.*;
@@ -14,7 +14,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "account")
-public class Account  extends  AuditModel {
+public class Account  extends AuditModel {
 
     public  enum AccountStatus {
         ACTIVE,
@@ -24,7 +24,8 @@ public class Account  extends  AuditModel {
     @GenericGenerator(name = "account_number", strategy = "com.matome.ledger.account.util.AccountNumberGenerator")
     @GeneratedValue(generator = "account_number")
     @Column(name="account_number", nullable = false)
-    private String accountNumber;
+    private Long accountNumber;
+
     @Column(name="first_name", nullable = true)
     private String firstName;
 

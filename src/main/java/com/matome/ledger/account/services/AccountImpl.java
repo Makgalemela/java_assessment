@@ -1,6 +1,12 @@
 package com.matome.ledger.account.services;
 
-import com.matome.ledger.account.model.*;
+import com.matome.ledger.account.Dto.TransactionListDto;
+import com.matome.ledger.account.entities.Account;
+import com.matome.ledger.account.entities.FeatureDatedTransactions;
+import com.matome.ledger.account.entities.RemovedTransactions;
+import com.matome.ledger.account.entities.Transactions;
+import com.matome.ledger.account.model.Request;
+import com.matome.ledger.account.model.ResponseResult;
 import com.matome.ledger.account.repository.AccountRepository;
 import com.matome.ledger.account.repository.FutureTransactionsRepository;
 import com.matome.ledger.account.repository.RemovedTransactionsRepository;
@@ -9,11 +15,13 @@ import com.matome.ledger.account.util.AccountNumberGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -24,9 +32,10 @@ public class AccountImpl implements AccountInterface {
     final TransactionsRepository transactionsRepository;
     final RemovedTransactionsRepository removedTransactionsRepository;
 
-    final  AccountNumberGenerator accountNumberGenerator;
+    final AccountNumberGenerator accountNumberGenerator;
 
     final FutureTransactionsRepository futureTransactionsRepository;
+
     public AccountImpl(AccountRepository accountRepository, TransactionsRepository transactionsRepository,
                        RemovedTransactionsRepository removedTransactionsRepository, AccountNumberGenerator accountNumberGenerator, FutureTransactionsRepository futureTransactionsRepository) {
         this.accountRepository = accountRepository;
@@ -62,6 +71,9 @@ public class AccountImpl implements AccountInterface {
             case DELETE_TRANSACTION: {
                 return removeTransaction(request.getTransactions());
             }
+            case GET_TRANSACTIONS: {
+                return transactions(request.getTransactionListDto());
+            }
             default: {
 
             }
@@ -78,7 +90,7 @@ public class AccountImpl implements AccountInterface {
         transactionsRepository.save(credit);
 
         return ResponseResult.builder()
-                .transactions(credit)
+                .transaction(credit)
                 .build();
     }
 
@@ -88,7 +100,7 @@ public class AccountImpl implements AccountInterface {
         debit.setTransactionType(Transactions.transactionType.DEBIT);
         transactionsRepository.save(debit);
         return ResponseResult.builder()
-                .transactions(debit)
+                .transaction(debit)
                 .build();
     }
 
@@ -104,7 +116,6 @@ public class AccountImpl implements AccountInterface {
     public ResponseResult balance(final Account account) {
 
         Optional<List<Transactions>> transactions = transactionsRepository.findByAccountNumber(account);
-
 
 
         if (transactions.isPresent()) {
@@ -125,9 +136,8 @@ public class AccountImpl implements AccountInterface {
                     .build();
         }
     }
-
     @Override
-    public ResponseResult featureDateDeposit(final FeatureDatedTransactions  transactions) {
+    public ResponseResult featureDateDeposit(final FeatureDatedTransactions transactions) {
 
         FeatureDatedTransactions featureDatedTransactions = transactions;
         transactions.setTransactionType(Transactions.transactionType.DEBIT);
@@ -157,7 +167,7 @@ public class AccountImpl implements AccountInterface {
             transactionsRepository.delete(transactions);
 
             return ResponseResult.builder()
-                    .transactions(transactions)
+                    .transaction(transactions)
                     .build();
         } else {
             return ResponseResult.builder()
@@ -174,7 +184,7 @@ public class AccountImpl implements AccountInterface {
         if (account1.isPresent()) {
             Optional<List<Transactions>> transactions = transactionsRepository.findByAccountNumber(account);
             transactions.ifPresent(x ->
-                    x.parallelStream().peek(txn -> {
+                    x.parallelStream().forEach(txn -> {
                         RemovedTransactions removedTransaction
                                 = RemovedTransactions.builder()
                                 .transactionType(txn.getTransactionType())
@@ -185,16 +195,44 @@ public class AccountImpl implements AccountInterface {
                                 .build();
 
                         removedTransactionsList.add(removedTransaction);
-                        ;
                     }));
             if (!removedTransactionsList.isEmpty()) {
                 removedTransactionsRepository.deleteAll(removedTransactionsList);
                 transactionsRepository.deleteAll(transactions.get());
             }
+            return ResponseResult.builder()
+                    .account(account1.get())
+                    .build();
         }
         return ResponseResult.builder()
-                .account(account)
                 .build();
+
     }
 
+    @Override
+    public ResponseResult transactions(TransactionListDto transactionListDto) {
+        Optional<Account> account = accountRepository.findByAccountNumber(Long.valueOf(transactionListDto.getAccountNumber()));
+        Optional<List<Transactions>> transactions = Optional.empty();
+
+        if(Objects.isNull(transactionListDto.getFilter()) && account.isPresent()){
+            transactions = transactionsRepository.findByAccountNumber(account.get());
+        }
+        else if (transactionListDto.getFilter().equalsIgnoreCase(String.valueOf(Transactions.transactionType.CREDIT)) ||
+                transactionListDto.getFilter().equalsIgnoreCase(String.valueOf(Transactions.transactionType.DEBIT))) {
+            if (account.isPresent()) {
+               transactions = transactionsRepository.findAllByAccountNumberAndTransactionType(account.get(),
+                        Transactions.transactionType.valueOf(transactionListDto.getFilter()));
+
+            }
+        }
+        if (transactions.isPresent() &&  !transactions.get().isEmpty()) {
+            return ResponseResult.builder()
+                    .transactions(transactions.get())
+                    .build();
+        } else {
+            return ResponseResult.builder()
+                    .transactions(transactions.get())
+                    .build();
+        }
+    }
 }

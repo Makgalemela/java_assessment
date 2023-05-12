@@ -1,10 +1,9 @@
 package com.matome.ledger.account.Dto;
 
-import com.matome.ledger.account.model.Account;
-import com.matome.ledger.account.model.Transactions;
+import com.matome.ledger.account.entities.Account;
+import com.matome.ledger.account.entities.Transactions;
 import lombok.*;
 
-import javax.persistence.Column;
 import java.math.BigDecimal;
 
 
