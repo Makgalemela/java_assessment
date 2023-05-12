@@ -11,12 +11,18 @@ spring:
     allow-circular-references: true
   # Data source
   datasource:
-    url: jdbc:h2:mem:mydb
-#    url: jdbc:h2:file:/data/account
-    username: sa
-    password: password
-    driverClassName: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/zmb-ci_ussd?ApplicationName=smsgw
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+#    url: jdbc:h2:mem:mydb
+##    url: jdbc:h2:file:/data/account
+#    username: sa
+#    password: password
+#    driverClassName: org.h2.Driver
   jpa:
+    hibernate:
+      ddl-auto: update
     spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
   # RabbitMQ
   rabbitmq:

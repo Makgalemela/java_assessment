@@ -1,12 +1,16 @@
 package com.matome.ledger.account.model;
 
 
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "transctions")
 public class Transactions  extends AuditModelTransactions {
@@ -24,6 +28,8 @@ public class Transactions  extends AuditModelTransactions {
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
     @Column(name = "transaction_type", nullable = false)
+
+    @Enumerated(EnumType.STRING)
     private transactionType transactionType;
     @Column(name = "Reference", nullable = false)
     private String reference;

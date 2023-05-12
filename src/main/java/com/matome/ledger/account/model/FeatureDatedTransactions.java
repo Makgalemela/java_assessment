@@ -42,12 +42,15 @@ public class FeatureDatedTransactions extends AuditModel {
 
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
+
     @Column(name = "transaction_type", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Transactions.transactionType transactionType;
 
     @Column(name = "dated_for", nullable = false)
     private LocalDate datedFor;
 
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private STATUS status;
 }

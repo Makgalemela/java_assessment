@@ -6,6 +6,7 @@ import com.matome.ledger.account.repository.FutureTransactionsRepository;
 import com.matome.ledger.account.repository.RemovedTransactionsRepository;
 import com.matome.ledger.account.repository.TransactionsRepository;
 import com.matome.ledger.account.util.AccountNumberGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class AccountImpl implements AccountInterface {
 
     final AccountRepository accountRepository;
@@ -39,6 +41,7 @@ public class AccountImpl implements AccountInterface {
 
         switch (request.getRequestType()) {
             case CREATE_ACCOUNT: {
+
                 return createAccount(request.getAccount());
             }
             case CREDIT: {

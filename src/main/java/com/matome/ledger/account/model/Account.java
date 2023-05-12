@@ -32,5 +32,7 @@ public class Account  extends  AuditModel {
     private String lastName;
 
     @Column(name="account_status", nullable = true)
+
+    @Enumerated(EnumType.STRING)
     private AccountStatus status;
 }

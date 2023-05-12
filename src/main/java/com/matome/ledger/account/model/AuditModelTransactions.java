@@ -2,6 +2,10 @@ package com.matome.ledger.account.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -20,12 +24,14 @@ import java.time.LocalDateTime;
         value = {"createdOn", "updatedOn"},
         allowGetters = true
 )
-@EnableJpaAuditing
 @Data
 public abstract class AuditModelTransactions implements Serializable {
 
+
     @Column(name = "created_on", nullable = false, updatable = false)
     @CreatedDate
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime createdAt;
 
 }

@@ -1,6 +1,8 @@
 package com.matome.ledger.account.util;
 
+import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
@@ -14,6 +16,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 
 @Service
+@Slf4j
 public class AccountNumberGenerator  implements IdentifierGenerator {
 
 
@@ -25,7 +28,13 @@ public class AccountNumberGenerator  implements IdentifierGenerator {
         Connection connection = session.connection();
         PreparedStatement ps = connection.prepareStatement("SELECT count(account_number) AS count from public.account");
         ResultSet rs = ps.executeQuery();
-        Long count = (long) rs.getInt("count");
+        Integer count = 0;
+        if(rs.next()) {
+           count = (Integer) rs.getInt("count");
+
+        } else  {
+            count = 1;
+        }
         LocalDate currentDateTime = LocalDate.now();
         // 5 char long chars
         String account = currentDateTime.toString()
@@ -37,9 +46,9 @@ public class AccountNumberGenerator  implements IdentifierGenerator {
         // We will also need to deal with concurrency to make sure that no same account numbers is created
         // This is limited to 99999 account at every given day
 
-        String accountNumber = String.format("%05", count);
+        String accountNumber = String.format("%05d", count);
 
-        return account.concat(accountNumber);
+        return String.format("%s%s", account, accountNumber);
     }
 
 }

@@ -27,6 +27,7 @@ public class RemovedTransactions extends AuditModelTransactions {
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
     @Column(name = "transaction_type", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Transactions.transactionType transactionType;
     @Column(name = "credit", nullable = false)
     private LocalDateTime originalDate;
