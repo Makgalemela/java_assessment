@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
-    Optional<Account> findByAccountNumber(Long aLong);
+    Optional<Account> findByAccountNumberAndStatus(Long aLong, Account.AccountStatus status);
 }

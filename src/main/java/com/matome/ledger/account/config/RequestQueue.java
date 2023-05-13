@@ -1,5 +1,6 @@
 package com.matome.ledger.account.config;
 
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -83,5 +84,6 @@ public class RequestQueue {
     public String DLRoutingKey() {
         return String.format("dl.%s", queueConfig.getRoutingKey());
     }
+
 
 }

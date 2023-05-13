@@ -4,6 +4,7 @@ import com.matome.ledger.account.entities.Account;
 import com.matome.ledger.account.entities.Transactions;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 
@@ -13,10 +14,7 @@ import java.math.BigDecimal;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionDto {
-
-    private Account accountNumber;
+public class TransactionDto  implements Serializable {
     private BigDecimal amount;
-    private Transactions.transactionType transactionType;
     private String reference;
 }

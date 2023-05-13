@@ -14,5 +14,7 @@ import java.util.Optional;
 public interface TransactionsRepository extends JpaRepository<Transactions, Long> {
     Optional<List<Transactions>> findByAccountNumber(final Account account);
 
+    Optional<List<Transactions>> findByAccountNumberAndAccountNumber_Status(final Account account, Account.AccountStatus status);
+
     Optional<List<Transactions>> findAllByAccountNumberAndTransactionType(final Account account, final Transactions.transactionType transactionType);
 }

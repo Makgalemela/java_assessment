@@ -1,5 +1,7 @@
 package com.matome.ledger.account.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.matome.ledger.account.Dto.AccountDto;
 import com.matome.ledger.account.Dto.TransactionListDto;
 import com.matome.ledger.account.entities.Account;
 import com.matome.ledger.account.entities.FeatureDatedTransactions;
@@ -15,7 +17,6 @@ import com.matome.ledger.account.util.AccountNumberGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -36,13 +37,16 @@ public class AccountImpl implements AccountInterface {
 
     final FutureTransactionsRepository futureTransactionsRepository;
 
+    final ObjectMapper mapper;
+
     public AccountImpl(AccountRepository accountRepository, TransactionsRepository transactionsRepository,
-                       RemovedTransactionsRepository removedTransactionsRepository, AccountNumberGenerator accountNumberGenerator, FutureTransactionsRepository futureTransactionsRepository) {
+                       RemovedTransactionsRepository removedTransactionsRepository, AccountNumberGenerator accountNumberGenerator, FutureTransactionsRepository futureTransactionsRepository, ObjectMapper mapper) {
         this.accountRepository = accountRepository;
         this.transactionsRepository = transactionsRepository;
         this.removedTransactionsRepository = removedTransactionsRepository;
         this.accountNumberGenerator = accountNumberGenerator;
         this.futureTransactionsRepository = futureTransactionsRepository;
+        this.mapper = mapper;
     }
 
     @RabbitListener(queues = "#{serviceQueueInfo.name}", concurrency = "#{serviceQueueConsumers}")
@@ -105,7 +109,8 @@ public class AccountImpl implements AccountInterface {
     }
 
     @Override
-    public ResponseResult createAccount(final Account account) {
+    public ResponseResult createAccount(final AccountDto accountDto) {
+        Account account = mapper.convertValue(accountDto, Account.class);
         Account newAccount = accountRepository.save(account);
         return ResponseResult.builder()
                 .account(newAccount)
@@ -113,17 +118,25 @@ public class AccountImpl implements AccountInterface {
     }
 
     @Override
-    public ResponseResult balance(final Account account) {
+    public ResponseResult balance(final AccountDto accountDto) {
+        Optional<List<Transactions>> transactions = Optional.empty();
 
-        Optional<List<Transactions>> transactions = transactionsRepository.findByAccountNumber(account);
+        Account account = accountRepository.findByAccountNumberAndStatus(accountDto.getAccountNumber(),
+                        Account.AccountStatus.ACTIVE).orElse(null);
 
-
+        if(Objects.nonNull(account)) {
+            transactions = transactionsRepository.findByAccountNumber(account);
+        } else {
+            return ResponseResult.builder()
+                    .account(null)
+                    .build();
+        }
         if (transactions.isPresent()) {
             List<Transactions> transactionsList = transactions.get();
             Double balance = transactionsList.stream()
                     .mapToDouble(x ->
                             x.getTransactionType().equals(Transactions.transactionType.DEBIT) ?
-                                    x.getAmount().doubleValue() : 0 - x.getAmount().doubleValue())
+                                    0 - x.getAmount().doubleValue() : x.getAmount().doubleValue())
                     .sum();
             return ResponseResult.builder()
                     .balance(balance)
@@ -136,6 +149,7 @@ public class AccountImpl implements AccountInterface {
                     .build();
         }
     }
+
     @Override
     public ResponseResult featureDateDeposit(final FeatureDatedTransactions transactions) {
 
@@ -177,9 +191,11 @@ public class AccountImpl implements AccountInterface {
     }
 
     @Override
-    public ResponseResult removeAccount(final Account account) {
+    public ResponseResult removeAccount(final AccountDto accountDto) {
 
-        Optional<Account> account1 = accountRepository.findByAccountNumber(Long.valueOf(account.getAccountNumber()));
+        Account account = mapper.convertValue(accountDto, Account.class);
+        Optional<Account> account1 = accountRepository.findByAccountNumberAndStatus(Long.valueOf(account.getAccountNumber()),
+                Account.AccountStatus.ACTIVE);
         List<RemovedTransactions> removedTransactionsList = new ArrayList<>();
         if (account1.isPresent()) {
             Optional<List<Transactions>> transactions = transactionsRepository.findByAccountNumber(account);
@@ -197,9 +213,11 @@ public class AccountImpl implements AccountInterface {
                         removedTransactionsList.add(removedTransaction);
                     }));
             if (!removedTransactionsList.isEmpty()) {
-                removedTransactionsRepository.deleteAll(removedTransactionsList);
+                removedTransactionsRepository.saveAll(removedTransactionsList);
                 transactionsRepository.deleteAll(transactions.get());
             }
+            account1.get().setStatus(Account.AccountStatus.INACTIVE);
+            accountRepository.save(account1.get());
             return ResponseResult.builder()
                     .account(account1.get())
                     .build();
@@ -211,27 +229,30 @@ public class AccountImpl implements AccountInterface {
 
     @Override
     public ResponseResult transactions(TransactionListDto transactionListDto) {
-        Optional<Account> account = accountRepository.findByAccountNumber(Long.valueOf(transactionListDto.getAccountNumber()));
+        Optional<Account> account = accountRepository.findByAccountNumberAndStatus(Long.valueOf(transactionListDto.getAccountNumber()),
+                Account.AccountStatus.ACTIVE);
         Optional<List<Transactions>> transactions = Optional.empty();
 
-        if(Objects.isNull(transactionListDto.getFilter()) && account.isPresent()){
+        if (Objects.isNull(transactionListDto.getFilter()) && account.isPresent()) {
             transactions = transactionsRepository.findByAccountNumber(account.get());
-        }
-        else if (transactionListDto.getFilter().equalsIgnoreCase(String.valueOf(Transactions.transactionType.CREDIT)) ||
-                transactionListDto.getFilter().equalsIgnoreCase(String.valueOf(Transactions.transactionType.DEBIT))) {
-            if (account.isPresent()) {
-               transactions = transactionsRepository.findAllByAccountNumberAndTransactionType(account.get(),
-                        Transactions.transactionType.valueOf(transactionListDto.getFilter()));
+        } else if (account.isPresent() && (transactionListDto.getFilter().equalsIgnoreCase(String.valueOf(Transactions.transactionType.CREDIT)) ||
+                transactionListDto.getFilter().equalsIgnoreCase(String.valueOf(Transactions.transactionType.DEBIT)))) {
+            transactions = transactionsRepository.findAllByAccountNumberAndTransactionType(account.get(),
+                    Transactions.transactionType.valueOf(transactionListDto.getFilter()));
 
-            }
         }
-        if (transactions.isPresent() &&  !transactions.get().isEmpty()) {
+        if (!account.isPresent()) {
+            return ResponseResult.builder()
+                    .build();
+        } else if (transactions.isPresent() && !transactions.get().isEmpty()) {
             return ResponseResult.builder()
                     .transactions(transactions.get())
+                    .account(account.get())
                     .build();
         } else {
             return ResponseResult.builder()
-                    .transactions(transactions.get())
+                    .transactions(new ArrayList<Transactions>())
+                    .account(account.get())
                     .build();
         }
     }

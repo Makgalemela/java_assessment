@@ -3,7 +3,7 @@ package com.matome.ledger.account.Dto;
 
 import lombok.*;
 import com.matome.ledger.account.entities.Account.AccountStatus;
-import net.minidev.json.annotate.JsonIgnore;
+//import net.minidev.json.annotate.JsonIgnore;
 
 import java.io.Serializable;
 

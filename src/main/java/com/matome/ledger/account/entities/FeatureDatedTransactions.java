@@ -4,7 +4,7 @@ package com.matome.ledger.account.entities;
 import com.matome.ledger.account.entities.Account;
 import com.matome.ledger.account.entities.AuditModel;
 import com.matome.ledger.account.entities.Transactions;
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -22,7 +22,11 @@ import java.time.LocalDate;
     - 4. for failed processing with insufficient balance
     by separating the tables we will get the best performance
  */
-@Data
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "feature_dated_transactions")
 public class FeatureDatedTransactions extends AuditModel {
