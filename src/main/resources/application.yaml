@@ -59,6 +59,6 @@ rabbitmq:
 okta:
   oauth2:
     issuer: https://dev-05562770.okta.com/oauth2/default
-    clientId: 0oa9j5cv18NcJWFd75d7
-    clientSecret: yl6g5tuy4i2284schHOMubulyg9fjvYPE2w0Diw9
+#    clientId: 0oa9j5cv18NcJWFd75d7
+#    clientSecret: yl6g5tuy4i2284schHOMubulyg9fjvYPE2w0Diw9
 

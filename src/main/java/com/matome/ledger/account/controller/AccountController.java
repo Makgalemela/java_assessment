@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matome.ledger.account.Dto.AccountDto;
 import com.matome.ledger.account.Dto.TransactionDto;
 import com.matome.ledger.account.Dto.TransactionListDto;
+import com.matome.ledger.account.Dto.TransactionRequestDto;
 import com.matome.ledger.account.entities.Account;
 import com.matome.ledger.account.entities.Transactions;
 import com.matome.ledger.account.model.Request;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -34,7 +36,7 @@ public class AccountController {
     }
 
     @GetMapping("/balance/{account_number}")
-    public ResponseEntity<Object> balance(@PathVariable("account_number")  @ACCOUNT Long accountNumber) {
+    public ResponseEntity<Object> balance(@PathVariable("account_number")  @ACCOUNT String accountNumber) {
 
         AccountDto account = AccountDto.builder().accountNumber(Long.valueOf(accountNumber)).build();
         Request request = Request.builder().account(account).requestType(Request.RequestType.BALANCE).build();
@@ -49,15 +51,13 @@ public class AccountController {
     }
 
     @PostMapping("/credit/{account_number}")
-    public ResponseEntity<Object> deposit(@RequestBody TransactionDto transactionDto, @PathVariable("account_number")
-     @ACCOUNT Long accountNumber) {
+    public ResponseEntity<Object> deposit(@RequestBody TransactionRequestDto transactionDto, @PathVariable("account_number")
+     @ACCOUNT String accountNumber) {
 
-        Transactions transactions = mapper.convertValue(transactionDto, Transactions.class);
-        Account account = Account.builder()
-                .accountNumber(accountNumber)
-                .build();
-        transactions.setAccountNumber(account);
-        Request request = Request.builder().transactions(transactions).requestType(Request.RequestType.CREDIT).build();
+        TransactionDto transaction = mapper.convertValue(transactionDto, TransactionDto.class);
+        AccountDto accountDto = AccountDto.builder().accountNumber(Long.valueOf(accountNumber)).build();
+        transaction.setAccountNumber(accountDto);
+        Request request = Request.builder().transactions(transaction).requestType(Request.RequestType.CREDIT).build();
         try {
             ResponseResult response = requestProcessor.processRequest(request);
             return ResponseHandler.generateResponse(HttpStatus.OK, true, "Account Credited", response);
@@ -68,14 +68,11 @@ public class AccountController {
 
     @PostMapping("/debit/{account_number}")
     public ResponseEntity<Object> withdraw(@RequestBody TransactionDto transactionDto, @PathVariable("account_number")
-    @ACCOUNT Long accountNumber) {
-
-        Transactions transactions = mapper.convertValue(transactionDto, Transactions.class);
-        Account account = Account.builder()
-                .accountNumber(accountNumber)
-                .build();
-        transactions.setAccountNumber(account);
-        Request request = Request.builder().transactions(transactions).requestType(Request.RequestType.DEBIT).build();
+    @ACCOUNT String accountNumber) {
+        TransactionDto transaction = mapper.convertValue(transactionDto, TransactionDto.class);
+        AccountDto accountDto = AccountDto.builder().accountNumber(Long.valueOf(accountNumber)).build();
+        transaction.setAccountNumber(accountDto);
+        Request request = Request.builder().transactions(transaction).requestType(Request.RequestType.DEBIT).build();
         try {
             ResponseResult response = requestProcessor.processRequest(request);
             return ResponseHandler.generateResponse(HttpStatus.OK, true, "Account Debited", response);
@@ -99,9 +96,11 @@ public class AccountController {
     @DeleteMapping("/remove/transaction/{transaction_id}/{account_number}")
     public ResponseEntity<Object> removeTransaction(@PathVariable("transaction_id") Long transactionId,
                                                     @PathVariable("account_number") @ACCOUNT String accountNumber) {
-        Transactions transactions = Transactions.builder().id(transactionId).build();
-        AccountDto account = AccountDto.builder().accountNumber(Long.valueOf(accountNumber)).build();
-        Request request = Request.builder().transactions(transactions).account(account).requestType(Request.RequestType.DELETE_TRANSACTION).build();
+
+        AccountDto accountDto = AccountDto.builder().accountNumber(Long.valueOf(accountNumber)).build();
+        TransactionDto transactions = TransactionDto.builder().accountNumber(accountDto).id(transactionId).build();
+        Request request = Request.builder().transactions(transactions)
+                .requestType(Request.RequestType.DELETE_TRANSACTION).build();
         try {
             requestProcessor.processRequest(request);
             return ResponseHandler.generateResponse(HttpStatus.OK, true, "Removed Transaction Successfully.");

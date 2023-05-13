@@ -1,5 +1,6 @@
 package com.matome.ledger.account.Dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.io.Serializable;
@@ -12,9 +13,7 @@ import java.math.BigDecimal;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionDto  implements Serializable {
-    private AccountDto accountNumber;
-    private Long id;
+public class TransactionRequestDto implements Serializable {
     private BigDecimal amount;
     private String reference;
 }

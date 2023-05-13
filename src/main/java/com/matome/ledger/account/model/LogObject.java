@@ -1,15 +1,16 @@
 package com.matome.ledger.account.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+
+import java.io.Serializable;
 
 @Getter
 @Setter
 @Builder
 @ToString
-public class LogObject {
+@AllArgsConstructor
+@NoArgsConstructor
+public class LogObject implements Serializable {
     private String responseTime;
     private String httpMethod;
     private String hostname;

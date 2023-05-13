@@ -19,8 +19,8 @@ public class AccountNumberValidator implements ConstraintValidator<ACCOUNT, Stri
     }
 
     @Override
-    public boolean isValid(String msisdn, ConstraintValidatorContext constraintValidatorContext) {
-        Matcher matcher = account_number_pattern.matcher(msisdn);
+    public boolean isValid(String account_number, ConstraintValidatorContext constraintValidatorContext) {
+        Matcher matcher = account_number_pattern.matcher(account_number);
         return matcher.matches();
     }
 }

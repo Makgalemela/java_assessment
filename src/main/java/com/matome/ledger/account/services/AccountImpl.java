@@ -2,6 +2,7 @@ package com.matome.ledger.account.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matome.ledger.account.Dto.AccountDto;
+import com.matome.ledger.account.Dto.TransactionDto;
 import com.matome.ledger.account.Dto.TransactionListDto;
 import com.matome.ledger.account.entities.Account;
 import com.matome.ledger.account.entities.FeatureDatedTransactions;
@@ -87,9 +88,9 @@ public class AccountImpl implements AccountInterface {
     }
 
     @Override
-    public ResponseResult credit(final Transactions transactions) {
+    public ResponseResult credit(final TransactionDto transactions) {
 
-        Transactions credit = transactions;
+        Transactions credit = mapper.convertValue(transactions, Transactions.class);
         credit.setTransactionType(Transactions.transactionType.CREDIT);
         transactionsRepository.save(credit);
 
@@ -99,8 +100,8 @@ public class AccountImpl implements AccountInterface {
     }
 
     @Override
-    public ResponseResult debit(final Transactions transactions) {
-        Transactions debit = transactions;
+    public ResponseResult debit(final TransactionDto transactions) {
+        Transactions debit = mapper.convertValue(transactions, Transactions.class);
         debit.setTransactionType(Transactions.transactionType.DEBIT);
         transactionsRepository.save(debit);
         return ResponseResult.builder()
@@ -163,7 +164,7 @@ public class AccountImpl implements AccountInterface {
 
     @Override
     @Transactional
-    public ResponseResult removeTransaction(final Transactions transactions) {
+    public ResponseResult removeTransaction(final TransactionDto transactions) {
 
         Optional<Transactions> transaction = transactionsRepository.findById(transactions.getId());
         if (transaction.isPresent()) {
@@ -178,10 +179,10 @@ public class AccountImpl implements AccountInterface {
                     .build();
 
             removedTransactionsRepository.save(removedTransactions);
-            transactionsRepository.delete(transactions);
+            transactionsRepository.delete(transaction.get());
 
             return ResponseResult.builder()
-                    .transaction(transactions)
+                    .transaction(transaction.get())
                     .build();
         } else {
             return ResponseResult.builder()
