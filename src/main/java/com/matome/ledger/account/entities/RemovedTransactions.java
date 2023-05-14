@@ -7,6 +7,8 @@ import com.matome.ledger.account.entities.Account;
 import com.matome.ledger.account.entities.AuditModelTransactions;
 import com.matome.ledger.account.entities.Transactions;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -26,10 +28,11 @@ public class RemovedTransactions extends AuditModelTransactions {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_number", nullable = false)
     @JsonBackReference
-
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Account accountNumber;
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;

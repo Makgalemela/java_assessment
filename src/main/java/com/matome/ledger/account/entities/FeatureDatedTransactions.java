@@ -1,10 +1,17 @@
 package com.matome.ledger.account.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.matome.ledger.account.entities.Account;
 import com.matome.ledger.account.entities.AuditModel;
 import com.matome.ledger.account.entities.Transactions;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -24,6 +31,7 @@ import java.time.LocalDate;
  */
 @Getter
 @Setter
+@Builder
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,15 +43,17 @@ public class FeatureDatedTransactions extends AuditModel {
         CANCELLED,
         PROCESSED,
         WAITING,
-        INSUFFICIENT
+        FAILED
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_number", nullable = false)
+    @JsonBackReference
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Account accountNumber;
 
     @Column(name = "amount", nullable = false)
@@ -54,9 +64,13 @@ public class FeatureDatedTransactions extends AuditModel {
     private Transactions.transactionType transactionType;
 
     @Column(name = "dated_for", nullable = false)
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate datedFor;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private STATUS status;
+    @Column(name = "Reference", nullable = false)
+    private String reference;
 }

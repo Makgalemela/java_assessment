@@ -4,6 +4,7 @@ package com.matome.ledger.account.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.matome.ledger.account.Dto.AccountDto;
+import com.matome.ledger.account.Dto.FutureDatedTransactionsDto;
 import com.matome.ledger.account.Dto.TransactionDto;
 import com.matome.ledger.account.Dto.TransactionListDto;
 import com.matome.ledger.account.entities.FeatureDatedTransactions;
@@ -33,7 +34,7 @@ public class Request implements Serializable {
 
     private RequestType requestType;
     private AccountDto account;
-    private FeatureDatedTransactions featureDatedTransactions;
+    private FutureDatedTransactionsDto featureDatedTransactions;
     private TransactionDto transactions;
     private TransactionListDto transactionListDto;
 }

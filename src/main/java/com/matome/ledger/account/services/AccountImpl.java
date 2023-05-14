@@ -2,6 +2,7 @@ package com.matome.ledger.account.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matome.ledger.account.Dto.AccountDto;
+import com.matome.ledger.account.Dto.FutureDatedTransactionsDto;
 import com.matome.ledger.account.Dto.TransactionDto;
 import com.matome.ledger.account.Dto.TransactionListDto;
 import com.matome.ledger.account.entities.Account;
@@ -41,7 +42,8 @@ public class AccountImpl implements AccountInterface {
     final ObjectMapper mapper;
 
     public AccountImpl(AccountRepository accountRepository, TransactionsRepository transactionsRepository,
-                       RemovedTransactionsRepository removedTransactionsRepository, AccountNumberGenerator accountNumberGenerator, FutureTransactionsRepository futureTransactionsRepository, ObjectMapper mapper) {
+                       RemovedTransactionsRepository removedTransactionsRepository, AccountNumberGenerator accountNumberGenerator,
+                       FutureTransactionsRepository futureTransactionsRepository, ObjectMapper mapper) {
         this.accountRepository = accountRepository;
         this.transactionsRepository = transactionsRepository;
         this.removedTransactionsRepository = removedTransactionsRepository;
@@ -91,10 +93,11 @@ public class AccountImpl implements AccountInterface {
     public ResponseResult credit(final TransactionDto transactions) {
 
         Transactions credit = mapper.convertValue(transactions, Transactions.class);
+        Account account = mapper.convertValue(transactions.getAccountNumber(), Account.class);
         credit.setTransactionType(Transactions.transactionType.CREDIT);
         transactionsRepository.save(credit);
-
         return ResponseResult.builder()
+                .account(account)
                 .transaction(credit)
                 .build();
     }
@@ -102,9 +105,11 @@ public class AccountImpl implements AccountInterface {
     @Override
     public ResponseResult debit(final TransactionDto transactions) {
         Transactions debit = mapper.convertValue(transactions, Transactions.class);
+        Account account = mapper.convertValue(transactions.getAccountNumber(), Account.class);
         debit.setTransactionType(Transactions.transactionType.DEBIT);
         transactionsRepository.save(debit);
         return ResponseResult.builder()
+                .account(account)
                 .transaction(debit)
                 .build();
     }
@@ -112,6 +117,7 @@ public class AccountImpl implements AccountInterface {
     @Override
     public ResponseResult createAccount(final AccountDto accountDto) {
         Account account = mapper.convertValue(accountDto, Account.class);
+        account.setStatus(Account.AccountStatus.ACTIVE);
         Account newAccount = accountRepository.save(account);
         return ResponseResult.builder()
                 .account(newAccount)
@@ -152,14 +158,31 @@ public class AccountImpl implements AccountInterface {
     }
 
     @Override
-    public ResponseResult featureDateDeposit(final FeatureDatedTransactions transactions) {
+    public ResponseResult featureDateDeposit(final FutureDatedTransactionsDto transactionsDto) {
+        Optional<Account> account = accountRepository.findByAccountNumberAndStatus(transactionsDto.getAccountNumber(),
+                Account.AccountStatus.ACTIVE);
 
-        FeatureDatedTransactions featureDatedTransactions = transactions;
-        transactions.setTransactionType(Transactions.transactionType.DEBIT);
-        futureTransactionsRepository.save(featureDatedTransactions);
-        return ResponseResult.builder()
-                .featureDatedTransactions(featureDatedTransactions)
-                .build();
+        if(account.isPresent()) {
+            FeatureDatedTransactions transactions = FeatureDatedTransactions.builder()
+                    .status(FeatureDatedTransactions.STATUS.WAITING)
+                    .datedFor(transactionsDto.getDatedFor())
+                    .transactionType(Transactions.transactionType.CREDIT)
+                    .accountNumber(account.get())
+                    .amount(transactionsDto.getAmount())
+                    .reference(transactionsDto.getReference())
+                    .build();
+            futureTransactionsRepository.save(transactions);
+            return ResponseResult.builder()
+                    .account(account.get())
+                    .futureDatedTransactions(transactions)
+                    .build();
+        } else {
+            return ResponseResult.builder()
+                    .futureDatedTransactions(null)
+                    .account(null)
+                    .build();
+        }
+
     }
 
     @Override

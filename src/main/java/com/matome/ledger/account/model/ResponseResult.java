@@ -23,7 +23,7 @@ public class ResponseResult implements Serializable {
     private Account account;
     private Double balance;
     private Transactions transaction;
-    private FeatureDatedTransactions featureDatedTransactions;
+    private FeatureDatedTransactions futureDatedTransactions;
     private List<Transactions> transactions;
 
 }

@@ -2,11 +2,9 @@ package com.matome.ledger.account.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matome.ledger.account.Dto.AccountDto;
-import com.matome.ledger.account.Dto.TransactionDto;
-import com.matome.ledger.account.Dto.TransactionListDto;
-import com.matome.ledger.account.Dto.TransactionRequestDto;
+import com.matome.ledger.account.Dto.*;
 import com.matome.ledger.account.entities.Account;
+import com.matome.ledger.account.entities.FeatureDatedTransactions;
 import com.matome.ledger.account.entities.Transactions;
 import com.matome.ledger.account.model.Request;
 import com.matome.ledger.account.model.ResponseResult;
@@ -18,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -65,6 +62,26 @@ public class AccountController {
             return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, false, ex.getMessage());
         }
     }
+
+    @PostMapping("/future/credit/{account_number}")
+    public ResponseEntity<Object> futureDeposit(@RequestBody FutureDatedTransactionsDto transaction, @PathVariable("account_number")
+    @ACCOUNT String accountNumber) {
+        transaction.setAccountNumber(Long.valueOf(accountNumber));
+
+        Request request = Request.builder().featureDatedTransactions(transaction).requestType(Request.RequestType.FUTURE_DATE).build();
+        try {
+            ResponseResult response = requestProcessor.processRequest(request);
+            if(Objects.isNull(response.getAccount())) {
+                return ResponseHandler.generateResponse(HttpStatus.OK, true, "Account does not exist" );
+
+            } else {
+                return ResponseHandler.generateResponse(HttpStatus.OK, true, "Account Credited For Future Date", response);
+            }
+        } catch (Exception ex) {
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, false, ex.getMessage());
+        }
+    }
+
 
     @PostMapping("/debit/{account_number}")
     public ResponseEntity<Object> withdraw(@RequestBody TransactionDto transactionDto, @PathVariable("account_number")

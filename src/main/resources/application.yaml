@@ -2,6 +2,18 @@ server:
   port: 19019
 
 spring:
+
+  # Fly configuration
+  flyway:
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    enabled: true
+    user: postgres
+    password: posgress
+    url: jdbc:postgresql://localhost:5432/accounting?ApplicationName=accounting_ledger
+    locations: classpath:db/migration
+
+
   # security
   security:
     basic:
@@ -11,18 +23,14 @@ spring:
     allow-circular-references: true
   # Data source
   datasource:
-    url: jdbc:postgresql://localhost:5432/zmb-ci_ussd?ApplicationName=smsgw
+    url: jdbc:postgresql://localhost:5432/accounting?ApplicationName=accounting_ledger
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
-#    url: jdbc:h2:mem:mydb
-##    url: jdbc:h2:file:/data/account
-#    username: sa
-#    password: password
-#    driverClassName: org.h2.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      enable_lazy_load_no_trans: true
+      ddl-auto: none
     spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
   # RabbitMQ
   rabbitmq:
@@ -51,7 +59,7 @@ rabbitmq:
       x-overflow: reject-publish-dlx
       queue-name: queue.sync.accounting.requests.inbound
       number-of-consumers: 5
-      routing-key: key.async.ivr
+      routing-key: key.async.accounting
       service-reply-timeout: 45000
 
 # Okta authorization
@@ -62,3 +70,10 @@ okta:
 #    clientId: 0oa9j5cv18NcJWFd75d7
 #    clientSecret: yl6g5tuy4i2284schHOMubulyg9fjvYPE2w0Diw9
 
+
+# future Dated chron job
+
+future:
+  dated:
+    cron:
+      frequency: '* * * * * *'
