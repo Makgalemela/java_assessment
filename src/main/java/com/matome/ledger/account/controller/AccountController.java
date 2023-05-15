@@ -14,6 +14,8 @@ import com.matome.ledger.account.util.ResponseHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -22,6 +24,7 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("/v1/ledger")
+@Validated
 public class AccountController {
     final RequestProcessor requestProcessor;
     final ObjectMapper mapper;
@@ -32,8 +35,10 @@ public class AccountController {
         this.mapper = mapper;
     }
 
+
     @GetMapping("/balance/{account_number}")
-    public ResponseEntity<Object> balance(@PathVariable("account_number")  @ACCOUNT String accountNumber) {
+    public ResponseEntity<Object> balance(@Validated @PathVariable(value = "account_number")  @ACCOUNT String accountNumber) {
+
 
         AccountDto account = AccountDto.builder().accountNumber(Long.valueOf(accountNumber)).build();
         Request request = Request.builder().account(account).requestType(Request.RequestType.BALANCE).build();
@@ -127,7 +132,7 @@ public class AccountController {
     }
 
     @DeleteMapping("/remove/account/{account_number}")
-    public ResponseEntity<Object> removeAccount(@PathVariable("account_number")  @ACCOUNT Long accountNumber) {
+    public ResponseEntity<Object> removeAccount(@PathVariable("account_number")  @ACCOUNT String accountNumber) {
         AccountDto account = AccountDto.builder().accountNumber(Long.valueOf(accountNumber)).build();
         Request request = Request.builder().account(account).requestType(Request.RequestType.DELETE_ACCOUNT).build();
         try {
@@ -139,12 +144,12 @@ public class AccountController {
     }
 
     @GetMapping("/transactions/{account_number}")
-    public ResponseEntity<Object> getTransactions(@PathVariable("account_number") @ACCOUNT Long accountNumber,
+    public ResponseEntity<Object> getTransactions(@PathVariable("account_number") @ACCOUNT String accountNumber,
                                                   @RequestParam("transaction_type") Optional<String> transactionType) {
 
         String transactionTypePresent = transactionType.orElse(null);
         TransactionListDto transactionListDto = TransactionListDto
-                .builder().filter(transactionTypePresent).accountNumber(String.valueOf(accountNumber)).build();
+                .builder().filter(transactionTypePresent).accountNumber(accountNumber).build();
         Request request = Request.builder().transactionListDto(transactionListDto)
                 .requestType(Request.RequestType.GET_TRANSACTIONS).build();
         try {

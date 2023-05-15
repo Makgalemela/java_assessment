@@ -1,6 +1,7 @@
 package com.matome.ledger.account.Dto;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -22,6 +23,7 @@ public class FutureDatedTransactionsDto implements Serializable {
     private BigDecimal amount;
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonFormat(pattern = "yyyy-mm-dd")
     private LocalDate datedFor;
     private String reference;
     private Long accountNumber;
