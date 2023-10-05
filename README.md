@@ -1,4 +1,4 @@
-# ?? Account Ledger API Assessment
+# Account Ledger API Assessment
 
 - The application exposes api protected by okta security, this are api's which enables basic account functionalities
 ## Functionalities
